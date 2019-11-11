@@ -73,5 +73,3 @@ def augment_data():
 
 def augment_image(X):
     return np.pad(X, 5, mode="constant", constant_values=0).reshape(1, 38, 38)
-
-augment_data()
