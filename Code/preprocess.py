@@ -12,6 +12,11 @@ def load_data():
     """
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
+    if not os.path.exists(os.path.join(data_dir, "processed_images.npy")):
+        print("Data hasn't been preprocessed, possibly first run.")
+        print("Please wait a few minutes.")
+        augment_data()
+        print("Done preprocessing, now loading.")
     X_train = np.load(os.path.join(data_dir, "processed_images.npy"))
     X_train = X_train / 255
     y_train = np.load(os.path.join(data_dir, "processed_labels.npy"))
