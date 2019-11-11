@@ -1,3 +1,4 @@
+import os
 import torch
 import preprocess
 import numpy as np
@@ -16,7 +17,8 @@ test_loader = DataLoader(
     test_data, batch_size=128, shuffle=False
 )
 labels = preprocess.labels()
-model_path = "model/sign_model.pth"
+base_dir = os.getcwd()
+model_path = os.path.join(base_dir, "Code", "model", "sign_model.pth")
 
 my_classifier = Classifier()
 my_classifier.cuda()

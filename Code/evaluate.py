@@ -1,19 +1,25 @@
 import torch
 import preprocess
 import numpy as np
+import os
 from torch.utils.data import DataLoader
 from modelling import Classifier, MyDataset
 from sklearn.metrics import cohen_kappa_score, f1_score, make_scorer
 
 def score_func(y_true, y_pred):
-    return (cohen_kappa_score(y_true, y_pred) + f1_score(y_true, y_pred, average="macro")) / 2
+    ckscr = cohen_kappa_score(y_true, y_pred)
+    f1scr = f1_score(y_true, y_pred, average="macro")
+    print("Cohen Kappa Score:", ckscr)
+    print("F1 Score:         ", f1scr)
+    return (ckscr + f1scr) / 2
 
 X_train, X_test, y_train, y_test = preprocess.load_data()
 test_data = MyDataset(X_test, y_test)
 test_loader = DataLoader(
     test_data, batch_size=128, shuffle=False
 )
-model_path = "model/sign_model.pth"
+base_dir = os.getcwd()
+model_path = os.path.join(base_dir, "Code", "model", "sign_model.pth")
 my_classifier = Classifier()
 my_classifier.load_state_dict(torch.load(model_path))
 my_classifier.cuda()
@@ -26,4 +32,4 @@ with torch.no_grad():
         preds.extend(pred)
 
 preds = np.array(preds)
-print(score_func(y_test, preds))
+print("Average:", score_func(y_test, preds))
