@@ -1,11 +1,13 @@
 import os
-import torch
-import preprocess
+
 import numpy as np
+import preprocess
+import torch
+
+from modelling import Classifier, MyDataset
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
-from modelling import Classifier, MyDataset
 
 X_train, X_test, y_train, y_test = preprocess.load_data()
 train_data = MyDataset(X_train, y_train)

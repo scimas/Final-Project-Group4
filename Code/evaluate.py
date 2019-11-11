@@ -1,10 +1,13 @@
-import torch
-import preprocess
-import numpy as np
 import os
-from torch.utils.data import DataLoader
+
+import numpy as np
+import preprocess
+import torch
+
 from modelling import Classifier, MyDataset
 from sklearn.metrics import cohen_kappa_score, f1_score, make_scorer
+from torch.utils.data import DataLoader
+
 
 def score_func(y_true, y_pred):
     ckscr = cohen_kappa_score(y_true, y_pred)
@@ -12,6 +15,7 @@ def score_func(y_true, y_pred):
     print("Cohen Kappa Score:", ckscr)
     print("F1 Score:         ", f1scr)
     return (ckscr + f1scr) / 2
+
 
 X_train, X_test, y_train, y_test = preprocess.load_data()
 test_data = MyDataset(X_test, y_test)
