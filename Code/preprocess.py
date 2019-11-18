@@ -3,7 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from skimage.transform import rotate
+from imblearn.over_sampling import RandomOverSampler
+from skimage.transform import resize, rotate
+from sklearn.model_selection import train_test_split
 
 
 def load_data():
@@ -17,15 +19,30 @@ def load_data():
         print("Please wait a few minutes.")
         augment_data()
         print("Done preprocessing, now loading.")
-    X_train = np.load(os.path.join(data_dir, "processed_images.npy"))
-    X_train = X_train / 255
-    y_train = np.load(os.path.join(data_dir, "processed_labels.npy"))
+    X = np.load(os.path.join(data_dir, "processed_images.npy"))
+    X = X / 255
+    y = np.load(os.path.join(data_dir, "processed_labels.npy"))
 
-    X_test = np.load(os.path.join(data_dir, "test_images.npy"))
-    X_test = X_test / 255
-    y_test = np.load(os.path.join(data_dir, "test_labels.npy"))
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, stratify=y)
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_val, y_train, y_val
+
+def load_test_data():
+    """
+    Read the data files, normalize the features and return them as train and test numpy arrays.
+    """
+    base_dir = os.getcwd()
+    data_dir = os.path.join(base_dir, "data")
+    if not os.path.exists(os.path.join(data_dir, "test_images.npy")):
+        print("Data hasn't been preprocessed, possibly first run.")
+        print("Please wait a few minutes.")
+        augment_data()
+        print("Done preprocessing, now loading.")
+    X = np.load(os.path.join(data_dir, "test_images.npy"))
+    X = X / 255
+    y = np.load(os.path.join(data_dir, "test_labels.npy"))
+
+    return X, y
 
 
 def labels():
@@ -35,53 +52,49 @@ def labels():
         "S", "T", "U", "V", "W", "X", "Y", "Z"
     ]
 
-    return text
+    return np.array(text)
 
 
 def augment_data():
+    ros = RandomOverSampler()
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_train.csv"))
-    X = df.iloc[:, 1:].values.reshape(-1, 28, 28)
+    X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    new_images = []
-    new_labels = []
-    for i, im in enumerate(X):
-        # Pad image with zeros
-        n_img = np.pad(im, 5, mode="constant", constant_values=0)
-        new_images.append(n_img)
-        new_labels.append(y[i])
-        # Flip image horizontally
-        new_images.append(n_img[:, ::-1])
-        new_labels.append(y[i])
-        # Rotate original image CCW
-        new_images.append(rotate(im, 30, resize=True))
-        new_labels.append(y[i])
-        # Rotate original image CW
-        new_images.append(rotate(im, -30, resize=True))
-        new_labels.append(y[i])
-        # Rotate flipped image CCW
-        new_images.append(rotate(im[:, ::-1], 30, resize=True))
-        new_labels.append(y[i])
-        # Rotate flipped image CW
-        new_images.append(rotate(im[:, ::-1], -30, resize=True))
-        new_labels.append(y[i])
-    
-    new_images = np.array(new_images).reshape(-1, 1, 38, 38)
+    X, y = ros.fit_sample(X, y)
+    X = X.reshape(-1, 28, 28)
+    new_images = [im for im in X]
+    new_labels = [label for label in y]
+    # # Flip image horizontally
+    # new_images.extend([im[:, ::-1] for im in X])
+    # new_labels.extend([label for label in y])
+    # # Rotate original image CCW
+    # new_images.extend([rotate(im, 5) for im in X])
+    # new_labels.extend([label for label in y])
+    # # Rotate original image CW
+    # new_images.extend([rotate(im, -5) for im in X])
+    # new_labels.extend([label for label in y])
+    # # Rotate flipped image CCW
+    # new_images.extend([rotate(im[:, ::-1], 5) for im in X])
+    # new_labels.extend([label for label in y])
+    # # Rotate flipped image CW
+    # new_images.extend([rotate(im[:, ::-1], -5) for im in X])
+    # new_labels.extend([label for label in y])
+
+    new_images = np.array(new_images).reshape(-1, 1, 28, 28)
     new_labels = np.array(new_labels)
     np.save(os.path.join(data_dir, "processed_images.npy"), new_images, allow_pickle=False)
     np.save(os.path.join(data_dir, "processed_labels.npy"), new_labels, allow_pickle=False)
 
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
-    X = df.iloc[:, 1:].values.reshape(-1, 28, 28)
+    X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    new_images = []
-    for i, im in enumerate(X):
-        new_images.append(np.pad(im, 5, mode="constant", constant_values=0))
-    new_images = np.array(new_images).reshape(-1, 1, 38, 38)
-    np.save(os.path.join(data_dir, "test_images.npy"), new_images, allow_pickle=False)
+    X, y = ros.fit_sample(X, y)
+    X = X.reshape(-1, 1, 28, 28)
+    np.save(os.path.join(data_dir, "test_images.npy"), X, allow_pickle=False)
     np.save(os.path.join(data_dir, "test_labels.npy"), y, allow_pickle=False)
 
 
 def augment_image(X):
-    return np.pad(X, 5, mode="constant", constant_values=0).reshape(1, 38, 38)
+    return np.pad(X, 5, mode="constant", constant_values=0).reshape(1, 34, 34)

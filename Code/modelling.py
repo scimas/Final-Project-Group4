@@ -1,47 +1,61 @@
 import torch
 
+from collections import namedtuple
+from math import floor
+from PIL import Image
 from torch import nn
 from torch.utils.data import Dataset
+from torchvision import transforms, utils
+
+ConvSize = namedtuple(
+    "ConvSize",
+    ("out_channels", "kernel_size", "padding", "pool", "pool_padding"),
+    defaults=(1, 3, 0, 2, 0)
+)
+
 
 class Classifier(nn.Module):
-    def __init__(self):
+    def __init__(self, conv_sizes, fc_sizes):
         super(Classifier, self).__init__()
+        in_size = 28
+        out_size = 0
+        conv_sizes.insert(0, ConvSize())
         self.layers = nn.ModuleDict()
-        self.layers["conv1"] = nn.ModuleList(
-            [
-                # 38 x 38 x 1 -> 36 x 36 x 12
-                nn.Conv2d(1, 16, 3),
-                nn.BatchNorm2d(16),
-                nn.ReLU(),
-                # 36 x 36 x 16 -> 18 x 18 x 16
-                nn.MaxPool2d(2),
-            ]
-        )
-        self.layers["conv2"] = nn.ModuleList(
-            [
-                # 18 x 18 x 16 -> 16 x 16 x 8
-                nn.Conv2d(16, 8, 3),
-                nn.BatchNorm2d(8),
-                nn.ReLU(),
-                # 16 x 16 x 8 -> 8 x 8 x 8
-                nn.MaxPool2d(2),
-            ]
-        )
+        for i, layer in enumerate(conv_sizes[1:]):
+            self.layers["conv" + str(i+1)] = nn.ModuleList(
+                [
+                    nn.Conv2d(conv_sizes[i][0], layer.out_channels, layer.kernel_size, padding=layer.padding),
+                    # nn.Dropout2d(0.4),
+                    nn.ReLU(),
+                    nn.MaxPool2d(layer.pool, padding=layer.pool_padding)
+                ]
+            )
+            mid_size = in_size + 2 * layer.padding - layer.kernel_size + 1
+            out_size = floor((mid_size + 2 * layer.pool_padding - layer.pool) / layer.pool + 1)
+            in_size = out_size
+        
         self.layers["fc1"] = nn.ModuleList(
             [
                 nn.Flatten(),
-                # 8 x 8 x 8 -> 128
-                nn.Linear(8 * 8 * 8, 128),
+                nn.Linear(out_size * out_size * conv_sizes[-1].out_channels, fc_sizes[0]),
                 nn.ReLU(),
             ]
         )
-        self.layers["fc2"] = nn.ModuleList(
-            [
-                # 128 -> 26
-                nn.Linear(128, 26),
-            ]
-        )
-    
+        for i, layer in enumerate(fc_sizes[1:]):
+            if i == len(fc_sizes) - 1:
+                self.layers["fc" + str(i+2)] = nn.ModuleList(
+                    [
+                        nn.Linear(fc_sizes[i], layer)
+                    ]
+                )
+            else:
+                self.layers["fc" + str(i+2)] = nn.ModuleList(
+                    [
+                        nn.Linear(fc_sizes[i], layer),
+                        nn.ReLU()
+                    ]
+                )
+
 
     def forward(self, X):
         for name, layerlist in self.layers.items():
@@ -55,6 +69,15 @@ class MyDataset(Dataset):
     def __init__(self, X, y):
         self.X = torch.from_numpy(X).float().cuda()
         self.y = torch.from_numpy(y).cuda()
+
+        # self.toPIL = transforms.ToPILImage()
+        # self.hflip = transforms.RandomHorizontalFlip()
+        # self.rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
+        # self.toTensor = transforms.ToTensor()
+
+        # self.transforms = transforms.Compose([
+        #     self.toPIL, self.hflip, self.rotate, self.toTensor
+        # ])
     
 
     def __getitem__(self, index):
