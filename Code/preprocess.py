@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 from imblearn.over_sampling import RandomOverSampler
-from skimage.transform import resize, rotate
 from sklearn.model_selection import train_test_split
+from torchvision import transforms
 
 
 def load_data():
@@ -26,6 +26,7 @@ def load_data():
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, stratify=y)
 
     return X_train, X_val, y_train, y_val
+
 
 def load_test_data():
     """
@@ -63,29 +64,10 @@ def augment_data():
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
     X, y = ros.fit_sample(X, y)
-    X = X.reshape(-1, 28, 28)
-    new_images = [im for im in X]
-    new_labels = [label for label in y]
-    # # Flip image horizontally
-    # new_images.extend([im[:, ::-1] for im in X])
-    # new_labels.extend([label for label in y])
-    # # Rotate original image CCW
-    # new_images.extend([rotate(im, 5) for im in X])
-    # new_labels.extend([label for label in y])
-    # # Rotate original image CW
-    # new_images.extend([rotate(im, -5) for im in X])
-    # new_labels.extend([label for label in y])
-    # # Rotate flipped image CCW
-    # new_images.extend([rotate(im[:, ::-1], 5) for im in X])
-    # new_labels.extend([label for label in y])
-    # # Rotate flipped image CW
-    # new_images.extend([rotate(im[:, ::-1], -5) for im in X])
-    # new_labels.extend([label for label in y])
-
-    new_images = np.array(new_images).reshape(-1, 1, 28, 28)
-    new_labels = np.array(new_labels)
-    np.save(os.path.join(data_dir, "processed_images.npy"), new_images, allow_pickle=False)
-    np.save(os.path.join(data_dir, "processed_labels.npy"), new_labels, allow_pickle=False)
+    X = X.reshape(-1, 1, 28, 28)
+    
+    np.save(os.path.join(data_dir, "processed_images.npy"), X, allow_pickle=False)
+    np.save(os.path.join(data_dir, "processed_labels.npy"), y, allow_pickle=False)
 
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
     X = df.iloc[:, 1:].values
@@ -96,5 +78,19 @@ def augment_data():
     np.save(os.path.join(data_dir, "test_labels.npy"), y, allow_pickle=False)
 
 
-def augment_image(X):
-    return np.pad(X, 5, mode="constant", constant_values=0).reshape(1, 34, 34)
+def make_transform():
+    toPIL = transforms.ToPILImage()
+    resize = transforms.Resize((3, 224, 224), interpolation=Image.LANCZOS)
+    hflip = transforms.RandomHorizontalFlip()
+    rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
+    toTensor = transforms.ToTensor()
+    normalization = transforms.Normalize(
+        mean = [0.485, 0.456, 0.406],
+        std = [0.229, 0.224, 0.225]
+    )
+
+    transforms = transforms.Compose([
+        toPIL, resize, hflip, rotate, toTensor, normalization
+    ])
+
+    return transforms
