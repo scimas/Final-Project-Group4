@@ -14,10 +14,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Optimizer learning rate
 learning_rate = 1e-4
 # Epochs
-epochs = 200
+epochs = 10
 # Validation loss early stopping patience
 # Number of epochs
-patience = 10
+patience = 1
 
 X_train, X_val, y_train, y_val = preprocess.load_data()
 train_data = MyDataset(X_train, y_train, preprocess.make_transform())
@@ -30,7 +30,7 @@ test_loader = DataLoader(
 )
 base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
-model_name = "ResNext"
+model_name = "ResNet"
 model_path = os.path.join(model_dir, "sign_model.pth")
 with open(os.path.join(model_dir, "model_specification"), "w") as ms:
     ms.write(model_name)

@@ -1,5 +1,4 @@
 import io
-import json
 import os
 import sys, select
 import time
@@ -31,7 +30,7 @@ my_classifier = get_model(model_name)
 my_classifier.load_state_dict(torch.load(model_path))
 my_classifier.to(device)
 my_classifier.eval()
-transforms = preprocess.make_transform()
+transforms = preprocess.make_transform(mode="predict")
 
 # good, im = cam.read()
 # time.sleep(1)

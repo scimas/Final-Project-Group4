@@ -31,7 +31,7 @@ def get_model(model_name):
     elif model_name == "VGG":
         model = models.vgg16(pretrained=True)
     elif model_name == "ResNet":
-        model = models.resnet50(pretrained=True)
+        model = models.resnet18(pretrained=True)
     elif model_name == "SqueezNet":
         model = models.squeezenet1_1(pretrained=True)
     elif model_name == "DenseNet":

@@ -2,8 +2,10 @@ import os
 
 import numpy as np
 import pandas as pd
+import torch
 
 from imblearn.over_sampling import RandomOverSampler
+from PIL import Image
 from sklearn.model_selection import train_test_split
 from torchvision import transforms
 
@@ -78,19 +80,36 @@ def augment_data():
     np.save(os.path.join(data_dir, "test_labels.npy"), y, allow_pickle=False)
 
 
-def make_transform():
+class ReplicateChannel(object):
+    def __call__(self, image):
+        assert isinstance(image, torch.Tensor)
+        return image.view(-1).repeat(3).view(3, 224, 224)
+
+
+def make_transform(mode="train"):
     toPIL = transforms.ToPILImage()
-    resize = transforms.Resize((3, 224, 224), interpolation=Image.LANCZOS)
+    resize = transforms.Resize((224, 224), interpolation=Image.LANCZOS)
     hflip = transforms.RandomHorizontalFlip()
     rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
     toTensor = transforms.ToTensor()
+    replicate = ReplicateChannel()
     normalization = transforms.Normalize(
         mean = [0.485, 0.456, 0.406],
         std = [0.229, 0.224, 0.225]
     )
 
-    transforms = transforms.Compose([
-        toPIL, resize, hflip, rotate, toTensor, normalization
-    ])
+    mods = None
+    if mode == "train":
+        mods = transforms.Compose([
+            toPIL, resize, hflip, rotate, toTensor, replicate, normalization
+        ])
+    elif mode == "eval":
+        mods = transforms.Compose([
+            toPIL, resize, hflip, rotate, toTensor, replicate, normalization
+        ])
+    elif mode == "predict":
+        mods = transforms.Compose([
+            toPIL, resize, toTensor, normalization
+        ])
 
-    return transforms
+    return mods
