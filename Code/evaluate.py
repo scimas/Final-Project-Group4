@@ -19,7 +19,7 @@ def score_func(y_true, y_pred):
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 alphabet = preprocess.labels()
-X_train, X_te, y_train, y_te = preprocess.load_data()
+X_train, X_te, y_train, y_te, train_ws = preprocess.load_data()
 X_train = np.vstack((X_train, X_te))
 y_train = np.hstack((y_train, y_te))
 train_data = MyDataset(X_train, y_train, preprocess.make_transform(mode="eval"))
@@ -27,7 +27,7 @@ train_loader = DataLoader(
     train_data, batch_size=512, shuffle=False
 )
 
-X_test, y_test = preprocess.load_test_data()
+X_test, y_test, test_ws = preprocess.load_test_data()
 test_data = MyDataset(X_test, y_test, preprocess.make_transform(mode="eval"))
 test_loader = DataLoader(
     test_data, batch_size=512, shuffle=False
