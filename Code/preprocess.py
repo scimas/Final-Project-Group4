@@ -15,18 +15,19 @@ def load_data():
     """
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
-    if not os.path.exists(os.path.join(data_dir, "processed_images.npy")):
+    if not os.path.exists(os.path.join(data_dir, "train_images.npy")):
         print("Data hasn't been preprocessed, possibly first run.")
         print("Please wait a few minutes.")
         augment_data()
         print("Done preprocessing, now loading.")
-    X = np.load(os.path.join(data_dir, "processed_images.npy"))
+    X = np.load(os.path.join(data_dir, "train_images.npy"))
     X = X / 255
-    y = np.load(os.path.join(data_dir, "processed_labels.npy"))
+    y = np.load(os.path.join(data_dir, "train_labels.npy"))
+    ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, stratify=y)
 
-    return X_train, X_val, y_train, y_val
+    return X_train, X_val, y_train, y_val, ws
 
 
 def load_test_data():
@@ -43,8 +44,9 @@ def load_test_data():
     X = np.load(os.path.join(data_dir, "test_images.npy"))
     X = X / 255
     y = np.load(os.path.join(data_dir, "test_labels.npy"))
+    ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
-    return X, y
+    return X, y, ws
 
 
 def labels():
