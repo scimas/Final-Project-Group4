@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import torch
 
-from imblearn.over_sampling import RandomOverSampler
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from torchvision import transforms
@@ -59,35 +58,41 @@ def labels():
 
 
 def augment_data():
-    ros = RandomOverSampler()
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_train.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    X, y = ros.fit_sample(X, y)
     X = X.reshape(-1, 1, 28, 28)
+    ws = df["label"].value_counts()
+    ws = ws.max() / ws
+    ws.at[9] = ws.at[25] = 0
+    train_weights = np.array([ws[i] for i in range(26)])
     
-    np.save(os.path.join(data_dir, "processed_images.npy"), X, allow_pickle=False)
-    np.save(os.path.join(data_dir, "processed_labels.npy"), y, allow_pickle=False)
+    np.save(os.path.join(data_dir, "train_images.npy"), X, allow_pickle=False)
+    np.save(os.path.join(data_dir, "train_labels.npy"), y, allow_pickle=False)
+    np.save(os.path.join(data_dir, "train_weights.npy"), train_weights, allow_pickle=False))
 
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    X, y = ros.fit_sample(X, y)
     X = X.reshape(-1, 1, 28, 28)
+    ws = df["label"].value_counts()
+    ws = ws.max() / ws
+    ws.at[9] = ws.at[25] = 0
+    test_weights = np.array([ws[i] for i in range(26)])
+    
     np.save(os.path.join(data_dir, "test_images.npy"), X, allow_pickle=False)
     np.save(os.path.join(data_dir, "test_labels.npy"), y, allow_pickle=False)
+    np.save(os.path.join(data_dir, "test_weights.npy"), test_weights, allow_pickle=False)
 
 
 class ReplicateChannel(object):
     def __call__(self, image):
-        assert isinstance(image, torch.Tensor)
         return image.view(-1).repeat(3).view(3, 224, 224)
 
 
 def make_transform(mode="train"):
-    toPIL = transforms.ToPILImage()
     resize = transforms.Resize((224, 224), interpolation=Image.LANCZOS)
     hflip = transforms.RandomHorizontalFlip()
     rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
@@ -100,14 +105,17 @@ def make_transform(mode="train"):
 
     mods = None
     if mode == "train":
+        toPIL = transforms.ToPILImage()
         mods = transforms.Compose([
             toPIL, resize, hflip, rotate, toTensor, replicate, normalization
         ])
     elif mode == "eval":
+        toPIL = transforms.ToPILImage()
         mods = transforms.Compose([
-            toPIL, resize, hflip, rotate, toTensor, replicate, normalization
+            toPIL, resize, toTensor, replicate, normalization
         ])
     elif mode == "predict":
+        toPIL = transforms.ToPILImage(mode="RGB")
         mods = transforms.Compose([
             toPIL, resize, toTensor, normalization
         ])
