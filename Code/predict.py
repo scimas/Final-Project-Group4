@@ -11,6 +11,7 @@ import torch
 
 from best_models.model_03.modelling import get_model
 from matplotlib import pyplot as plt
+from skimage.io import imread
 from skimage.transform import rotate
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -20,23 +21,23 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_01")
+model_dir = os.path.join(base_dir, "Code", "best_models", "model_03")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
-    model_name = ms.readline()
+    model_name = ms.readline().strip()
 
 my_classifier = get_model(model_name)
 my_classifier.load_state_dict(torch.load(model_path))
 my_classifier.to(device)
 my_classifier.eval()
-transforms = preprocess.make_transform(mode="predict")
+transform = preprocess.make_transform(mode="predict")
 
 # good, im = cam.read()
 # time.sleep(1)
 
 plt.ion()
-camera_url = "http://scimas:password@10.0.0.81:8080/photo.jpg"
+camera_url = "http://scimas:abcd1234@161.253.113.209:8080/photo.jpg"
 while True:
     # good, im = cam.read()
     # time.sleep(0.01)
@@ -46,10 +47,10 @@ while True:
     im = imread(f) / 255
     im = rotate(im, 90, resize=True)
     im = im[420:-420, :]
-    im = transforms(im)
+    im = transform(np.float32(im)).view(1, 3, 224, 224)
     
     plt.clf()
-    plt.imshow(im.numpy(), cmap="gray")
+    plt.imshow(im.numpy().reshape(224, 224, 3), cmap="gray")
     plt.draw()
     plt.pause(0.01)
     
