@@ -37,7 +37,7 @@ with open(os.path.join(model_dir, "model_specification"), "w") as ms:
 
 my_classifier = get_model(model_name)
 my_classifier.to(device)
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(weight=torch.from_numpy(ws))
 optimizer = optim.SGD(my_classifier.parameters(), lr=learning_rate, momentum=0.9)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 

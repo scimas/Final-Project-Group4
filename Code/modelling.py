@@ -7,15 +7,15 @@ from torchvision import models
 
 
 class MyDataset(Dataset):
-    def __init__(self, X, y, transforms=None):
+    def __init__(self, X, y, transform=None):
         self.X = torch.from_numpy(X).float()
         self.y = torch.from_numpy(y)
-        self.transforms = transforms
+        self.transform = transform
 
 
     def __getitem__(self, idx):
-        if self.transforms:
-            return self.transforms(self.X[idx]), self.y[idx]
+        if self.transform:
+            return self.transform(self.X[idx]), self.y[idx]
         else:
             return self.X[idx], self.y[idx]
     
