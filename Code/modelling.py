@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 from PIL import Image
@@ -8,7 +9,7 @@ from torchvision import models
 
 class MyDataset(Dataset):
     def __init__(self, X, y, transform=None):
-        self.X = torch.from_numpy(X).float()
+        self.X = np.float32(X)
         self.y = torch.from_numpy(y)
         self.transform = transform
 

@@ -14,7 +14,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Optimizer learning rate
 learning_rate = 1e-2
 # Epochs
-epochs = 50
+epochs = 100
 # Validation loss early stopping patience
 # Number of epochs
 patience = 10
@@ -26,7 +26,7 @@ train_loader = DataLoader(
 )
 test_data = MyDataset(X_val, y_val, preprocess.make_transform("eval"))
 test_loader = DataLoader(
-    test_data, batch_size=512, shuffle=False, num_workers=8
+    test_data, batch_size=512, shuffle=False, num_workers=8, pin_memory=True
 )
 base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
@@ -37,9 +37,9 @@ with open(os.path.join(model_dir, "model_specification"), "w") as ms:
 
 my_classifier = get_model(model_name)
 my_classifier.to(device)
-criterion = nn.CrossEntropyLoss(weight=torch.from_numpy(ws))
+criterion = nn.CrossEntropyLoss(weight=torch.from_numpy(ws).to(device))
 optimizer = optim.SGD(my_classifier.parameters(), lr=learning_rate, momentum=0.9)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3)
 
 min_val_loss = 1e10
 loss_decreased = 0
@@ -55,7 +55,7 @@ for epoch in range(epochs):
         total_loss += loss.item()
         print("\rBatch: {:3d}".format(i), end="")
     print()
-    print("Epoch: {:3d} Loss: {:6.4f}".format(epoch, total_loss/len(train_loader)), end=" ")
+    print("Epoch: {:3d} Loss: {:10.3g}".format(epoch, total_loss/len(train_loader)), end=" ")
     with torch.no_grad():
         total_loss = 0
         my_classifier.eval()
@@ -64,7 +64,7 @@ for epoch in range(epochs):
             loss = criterion(pred, labels.to(device))
             total_loss += loss.item()
         scheduler.step(total_loss/len(test_loader))
-        print("Val loss: {:6.4f}".format(total_loss/len(test_loader)))
+        print("Val loss: {:10.3g}".format(total_loss/len(test_loader)))
         if total_loss < min_val_loss:
             min_val_loss = total_loss
             loss_decreased = 0
