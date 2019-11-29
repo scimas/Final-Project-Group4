@@ -21,7 +21,6 @@ def load_data():
         augment_data()
         print("Done preprocessing, now loading.")
     X = np.load(os.path.join(data_dir, "train_images.npy"))
-    X = X / 255
     y = np.load(os.path.join(data_dir, "train_labels.npy"))
     ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
@@ -42,7 +41,6 @@ def load_test_data():
         augment_data()
         print("Done preprocessing, now loading.")
     X = np.load(os.path.join(data_dir, "test_images.npy"))
-    X = X / 255
     y = np.load(os.path.join(data_dir, "test_labels.npy"))
     ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
@@ -65,24 +63,24 @@ def augment_data():
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_train.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    X = X.reshape(-1, 1, 28, 28)
+    X = X.reshape(-1, 28, 28, 1)
     ws = df["label"].value_counts()
     ws = ws.max() / ws
     ws.at[9] = ws.at[25] = 0
-    train_weights = np.array([ws[i] for i in range(26)])
+    train_weights = np.float32(np.array([ws[i] for i in range(26)]))
     
     np.save(os.path.join(data_dir, "train_images.npy"), X, allow_pickle=False)
     np.save(os.path.join(data_dir, "train_labels.npy"), y, allow_pickle=False)
-    np.save(os.path.join(data_dir, "train_weights.npy"), train_weights, allow_pickle=False))
+    np.save(os.path.join(data_dir, "train_weights.npy"), train_weights, allow_pickle=False)
 
     df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
-    X = X.reshape(-1, 1, 28, 28)
+    X = X.reshape(-1, 28, 28, 1)
     ws = df["label"].value_counts()
     ws = ws.max() / ws
     ws.at[9] = ws.at[25] = 0
-    test_weights = np.array([ws[i] for i in range(26)])
+    test_weights = np.float32(np.array([ws[i] for i in range(26)]))
     
     np.save(os.path.join(data_dir, "test_images.npy"), X, allow_pickle=False)
     np.save(os.path.join(data_dir, "test_labels.npy"), y, allow_pickle=False)
@@ -109,17 +107,17 @@ def make_transform(mode="train"):
     if mode == "train":
         toPIL = transforms.ToPILImage()
         mods = transforms.Compose([
-            toPIL, resize, hflip, rotate, toTensor, replicate, normalization
+            toTensor, toPIL, resize, hflip, rotate, toTensor, replicate, normalization
         ])
     elif mode == "eval":
         toPIL = transforms.ToPILImage()
         mods = transforms.Compose([
-            toPIL, resize, toTensor, replicate, normalization
+            toTensor, toPIL, resize, toTensor, replicate, normalization
         ])
     elif mode == "predict":
         toPIL = transforms.ToPILImage(mode="RGB")
         mods = transforms.Compose([
-            toPIL, resize, toTensor, normalization
+            toTensor, toPIL, resize, toTensor, normalization
         ])
 
     return mods
