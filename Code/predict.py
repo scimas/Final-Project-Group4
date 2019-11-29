@@ -3,25 +3,21 @@ import os
 import sys, select
 import time
 
-import cv2
 import numpy as np
 import preprocess
 import requests
 import torch
 
-from best_models.model_03.modelling import get_model
+from best_models.model_05.modelling import get_model
 from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import rotate
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# # Start camera
-# cam = cv2.VideoCapture(0)
-# cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_03")
+model_dir = os.path.join(base_dir, "Code", "best_models", "model_05")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
@@ -33,24 +29,19 @@ my_classifier.to(device)
 my_classifier.eval()
 transform = preprocess.make_transform(mode="predict")
 
-# good, im = cam.read()
-# time.sleep(1)
-
 plt.ion()
-camera_url = "http://scimas:abcd1234@161.253.113.209:8080/photo.jpg"
+camera_url = "http://scimas:abcd1234@10.0.0.81:8080/photo.jpg"
 while True:
-    # good, im = cam.read()
-    # time.sleep(0.01)
-    # good, im = cam.read()
     r = requests.get(camera_url)
     f = io.BytesIO(r.content)
-    im = imread(f) / 255
-    im = rotate(im, 90, resize=True)
+    im = imread(f)
+    im = rotate(im, -90, resize=True)
     im = im[420:-420, :]
-    im = transform(np.float32(im)).view(1, 3, 224, 224)
+    im = transform(np.float32(im))
+    im = im.view(1, 3, 224, 224)
     
     plt.clf()
-    plt.imshow(im.numpy().reshape(224, 224, 3), cmap="gray")
+    plt.imshow(im[0].numpy().transpose(1, 2, 0))
     plt.draw()
     plt.pause(0.01)
     
@@ -63,5 +54,4 @@ while True:
     if inp:
         if sys.stdin.readline().strip() == "q":
             plt.close()
-            # cam.release()
             break
