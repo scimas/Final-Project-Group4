@@ -96,6 +96,7 @@ def make_transform(mode="train"):
     resize = transforms.Resize((224, 224), interpolation=Image.LANCZOS)
     hflip = transforms.RandomHorizontalFlip()
     rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
+    jitter = transforms.ColorJitter()
     toTensor = transforms.ToTensor()
     replicate = ReplicateChannel()
     normalization = transforms.Normalize(
@@ -107,7 +108,7 @@ def make_transform(mode="train"):
     if mode == "train":
         toPIL = transforms.ToPILImage()
         mods = transforms.Compose([
-            toTensor, toPIL, resize, hflip, rotate, toTensor, replicate, normalization
+            toTensor, toPIL, resize, hflip, rotate, jitter, toTensor, replicate, normalization
         ])
     elif mode == "eval":
         toPIL = transforms.ToPILImage()
