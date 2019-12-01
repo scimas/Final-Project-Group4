@@ -42,7 +42,7 @@ def load_test_data():
         print("Done preprocessing, now loading.")
     X = np.load(os.path.join(data_dir, "test_images.npy"))
     y = np.load(os.path.join(data_dir, "test_labels.npy"))
-    ws = np.load(os.path.join(data_dir, "train_weights.npy"))
+    ws = np.load(os.path.join(data_dir, "test_weights.npy"))
 
     return X, y, ws
 
@@ -60,7 +60,7 @@ def labels():
 def augment_data():
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
-    df = pd.read_csv(os.path.join(data_dir, "sign_mnist_train.csv"))
+    df = pd.read_csv(os.path.join(data_dir, "augmented.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
     X = X.reshape(-1, 28, 28, 1)
@@ -96,7 +96,7 @@ def make_transform(mode="train"):
     resize = transforms.Resize((224, 224), interpolation=Image.LANCZOS)
     hflip = transforms.RandomHorizontalFlip()
     rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
-    jitter = transforms.ColorJitter()
+    jitter = transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.3)
     toTensor = transforms.ToTensor()
     replicate = ReplicateChannel()
     normalization = transforms.Normalize(
@@ -117,6 +117,7 @@ def make_transform(mode="train"):
         ])
     elif mode == "predict":
         toPIL = transforms.ToPILImage(mode="RGB")
+        resize2 = transforms.Resize((28, 28), interpolation=Image.LANCZOS)
         mods = transforms.Compose([
             toTensor, toPIL, resize, toTensor, normalization
         ])

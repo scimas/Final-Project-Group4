@@ -8,7 +8,7 @@ import preprocess
 import requests
 import torch
 
-from best_models.model_05.modelling import get_model
+from best_models.model_09.modelling import get_model
 from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import rotate
@@ -17,7 +17,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_05")
+model_dir = os.path.join(base_dir, "Code", "best_models", "model_09")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
@@ -30,7 +30,7 @@ my_classifier.eval()
 transform = preprocess.make_transform(mode="predict")
 
 plt.ion()
-camera_url = "http://scimas:abcd1234@10.0.0.81:8080/photo.jpg"
+camera_url = "http://scimas:abcd1234@ip:8080/photo.jpg"
 while True:
     r = requests.get(camera_url)
     f = io.BytesIO(r.content)
@@ -39,9 +39,10 @@ while True:
     im = im[420:-420, :]
     im = transform(np.float32(im))
     im = im.view(1, 3, 224, 224)
+    show_im = np.clip(im[0].numpy().transpose(1, 2, 0), 0, 1)
     
     plt.clf()
-    plt.imshow(im[0].numpy().transpose(1, 2, 0))
+    plt.imshow(show_im)
     plt.draw()
     plt.pause(0.01)
     
