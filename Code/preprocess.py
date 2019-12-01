@@ -119,7 +119,7 @@ def make_transform(mode="train"):
         toPIL = transforms.ToPILImage(mode="RGB")
         resize2 = transforms.Resize((28, 28), interpolation=Image.LANCZOS)
         mods = transforms.Compose([
-            toTensor, toPIL, resize, toTensor, normalization
+            toTensor, toPIL, resize2, resize, toTensor, normalization
         ])
 
     return mods
