@@ -14,6 +14,11 @@ To evaluate the model:
 ```
 ./run.sh evaluate
 ```
+To predict on real time data:
+```
+./run.sh predict
+```
+Note: You will need to install the IP Webcam app on you android smartphone to access the camera for images. Or modify the predict script according to your needs.
 
 ## Data:
 The data can be obtained from [Kaggle](https://www.kaggle.com/datamunge/sign-language-mnist).
