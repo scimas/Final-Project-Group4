@@ -8,8 +8,8 @@ import preprocess
 import requests
 import torch
 
-from best_models.model_09.modelling import get_model
 from matplotlib import pyplot as plt
+from modelling import get_model, Committee
 from skimage.io import imread
 from skimage.transform import rotate
 
@@ -17,20 +17,17 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_09")
+model_dir = os.path.join(base_dir, "Code", "best_models", "model_10")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
-with open(os.path.join(model_dir, "model_specification"), "r") as ms:
-    model_name = ms.readline().strip()
-
-my_classifier = get_model(model_name)
-my_classifier.load_state_dict(torch.load(model_path))
-my_classifier.to(device)
-my_classifier.eval()
+my_committee = Committee()
+my_committee.load_state_dict(torch.load(model_path))
+my_committee.to(device)
+my_committee.eval()
 transform = preprocess.make_transform(mode="predict")
 
 plt.ion()
-camera_url = "http://scimas:abcd1234@ip:8080/photo.jpg"
+camera_url = "http://scimas:abcd1234@161.253.112.73:8080/photo.jpg"
 while True:
     r = requests.get(camera_url)
     f = io.BytesIO(r.content)
@@ -47,7 +44,7 @@ while True:
     plt.pause(0.01)
     
     with torch.no_grad():
-        pred = my_classifier(im.to(device))
+        pred = my_committee(im.to(device))
         pred = torch.argmax(pred, axis=1).cpu().item()
         print(pred, labels[pred])
 

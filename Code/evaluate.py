@@ -4,7 +4,7 @@ import numpy as np
 import preprocess
 import torch
 
-from modelling import MyDataset, get_model
+from modelling import MyDataset, get_model, Committee
 from sklearn.metrics import cohen_kappa_score, f1_score, make_scorer
 from torch.utils.data import DataLoader
 
@@ -36,18 +36,15 @@ base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
-with open(os.path.join(model_dir, "model_specification"), "r") as ms:
-    model_name = ms.readline()
-
-my_classifier = get_model(model_name)
-my_classifier.load_state_dict(torch.load(model_path))
-my_classifier.to(device)
-my_classifier.eval()
+my_committee = Committee()
+my_committee.load_state_dict(torch.load(model_path))
+my_committee.to(device)
+my_committee.eval()
 
 preds = []
 with torch.no_grad():
     for i, (images, labels) in enumerate(test_loader):
-        pred = my_classifier(images.to(device))
+        pred = my_committee(images.to(device))
         pred = torch.argmax(pred, axis=1).cpu().numpy().tolist()
         preds.extend(pred)
 
@@ -59,7 +56,7 @@ print()
 preds = []
 with torch.no_grad():
     for i, (images, labels) in enumerate(train_loader):
-        pred = my_classifier(images.to(device))
+        pred = my_committee(images.to(device))
         pred = torch.argmax(pred, axis=1).cpu().numpy().tolist()
         preds.extend(pred)
 

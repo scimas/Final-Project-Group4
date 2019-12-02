@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 
@@ -6,6 +8,7 @@ from torch import nn
 from torch.utils.data import Dataset
 from torchvision import models
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class MyDataset(Dataset):
     def __init__(self, X, y, transform=None):
@@ -56,3 +59,33 @@ def get_model(model_name):
     model.fc = nn.Linear(in_features, 26)
 
     return model
+
+
+class Committee(nn.Module):
+    def __init__(self):
+        super(Committee, self).__init__()
+        base_dir = os.getcwd()
+        model_name = "GoogleNet"
+        self.my_classifier1 = get_model(model_name)
+        model1_path = os.path.join(base_dir, "Code", "best_models", "model_09", "sign_model.pth")
+        self.my_classifier1.load_state_dict(torch.load(model1_path))
+        for param in self.my_classifier1.parameters():
+            param.requires_grad = False
+        self.my_classifier1.to(device)
+        self.my_classifier1.eval()
+        model_name = "ResNet"
+        self.my_classifier2 = get_model(model_name)
+        model2_path = os.path.join(base_dir, "Code", "best_models", "model_08", "sign_model.pth")
+        self.my_classifier2.load_state_dict(torch.load(model2_path))
+        for param in self.my_classifier2.parameters():
+            param.requires_grad = False
+        self.my_classifier2.to(device)
+        self.my_classifier2.eval()
+        self.fc = nn.Linear(26 * 2, 26)
+    
+    def forward(self, X):
+        pred1 = self.my_classifier1(X)
+        pred2 = self.my_classifier2(X)
+        return self.fc(torch.cat(
+            (pred1, pred2), dim=1
+        ))
