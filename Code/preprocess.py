@@ -24,7 +24,7 @@ def load_data():
     y = np.load(os.path.join(data_dir, "train_labels.npy"))
     ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.5, stratify=y)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, stratify=y)
 
     return X_train, X_val, y_train, y_val, ws
 
