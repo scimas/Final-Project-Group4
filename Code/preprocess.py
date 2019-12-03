@@ -24,7 +24,7 @@ def load_data():
     y = np.load(os.path.join(data_dir, "train_labels.npy"))
     ws = np.load(os.path.join(data_dir, "train_weights.npy"))
 
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, stratify=y)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.5, stratify=y)
 
     return X_train, X_val, y_train, y_val, ws
 
@@ -73,7 +73,7 @@ def augment_data():
     np.save(os.path.join(data_dir, "train_labels.npy"), y, allow_pickle=False)
     np.save(os.path.join(data_dir, "train_weights.npy"), train_weights, allow_pickle=False)
 
-    df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
+    df = pd.read_csv(os.path.join(data_dir, "augmented.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
     X = X.reshape(-1, 28, 28, 1)
