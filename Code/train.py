@@ -21,11 +21,11 @@ patience = 5
 X_train, X_val, y_train, y_val, ws = preprocess.load_data()
 train_data = MyDataset(X_train, y_train, preprocess.make_transform("train"))
 train_loader = DataLoader(
-    train_data, batch_size=128, shuffle=True, num_workers=8, pin_memory=True
+    train_data, batch_size=128, shuffle=True, num_workers=8, pin_memory=torch.cuda.is_available()
 )
 test_data = MyDataset(X_val, y_val, preprocess.make_transform("eval"))
 test_loader = DataLoader(
-    test_data, batch_size=512, shuffle=False, num_workers=8, pin_memory=True
+    test_data, batch_size=512, shuffle=False, num_workers=8, pin_memory=torch.cuda.is_available()
 )
 base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
