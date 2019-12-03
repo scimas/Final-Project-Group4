@@ -1,66 +1,53 @@
 import io
-import json
 import os
 import sys, select
 import time
 
-import cv2
 import numpy as np
 import preprocess
 import requests
 import torch
 
-from best_models.model_01.modelling import Classifier, ConvSize
+from best_models.model_09.modelling import get_model
 from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import rotate
 
-# # Start camera
-# cam = cv2.VideoCapture(0)
-# cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_01")
+model_dir = os.path.join(base_dir, "Code", "best_models", "model_09")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
-conv_sizes = []
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
-    spec = json.load(ms)
-fc_sizes = spec["fc"]
-for layer in spec["conv"]:
-    conv_sizes.append(ConvSize(*layer))
+    model_name = ms.readline().strip()
 
-my_classifier = Classifier(conv_sizes, fc_sizes)
+my_classifier = get_model(model_name)
 my_classifier.load_state_dict(torch.load(model_path))
-my_classifier.cuda()
+my_classifier.to(device)
 my_classifier.eval()
-
-# good, im = cam.read()
-# time.sleep(1)
+transform = preprocess.make_transform(mode="predict")
 
 plt.ion()
-camera_url = "http://scimas:password@10.0.0.81:8080/photo.jpg"
+camera_url = "http://scimas:abcd1234@ip:8080/photo.jpg"
 while True:
-    # good, im = cam.read()
-    # time.sleep(0.01)
-    # good, im = cam.read()
     r = requests.get(camera_url)
     f = io.BytesIO(r.content)
     im = imread(f)
-    im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) / 255
-    im = rotate(im, 90, resize=True)
+    im = rotate(im, -90, resize=True)
     im = im[420:-420, :]
-    im = cv2.resize(im, (28, 28), interpolation=cv2.INTER_CUBIC)
+    im = transform(np.float32(im))
+    im = im.view(1, 3, 224, 224)
+    show_im = np.clip(im[0].numpy().transpose(1, 2, 0), 0, 1)
     
     plt.clf()
-    plt.imshow(im, cmap="gray")
+    plt.imshow(show_im)
     plt.draw()
     plt.pause(0.01)
     
-    im = im.reshape(1, 1, 28, 28)
     with torch.no_grad():
-        pred = my_classifier(torch.from_numpy(im).float().cuda())
+        pred = my_classifier(im.to(device))
         pred = torch.argmax(pred, axis=1).cpu().item()
         print(pred, labels[pred])
 
@@ -68,5 +55,4 @@ while True:
     if inp:
         if sys.stdin.readline().strip() == "q":
             plt.close()
-            # cam.release()
             break
