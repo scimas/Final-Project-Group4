@@ -29,30 +29,51 @@ def get_model(model_name):
     model = None
     if model_name == "AlexNet":
         model = models.alexnet(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "VGG":
         model = models.vgg16(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "ResNet":
         model = models.resnet18(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "SqueezNet":
         model = models.squeezenet1_1(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "DenseNet":
-        model = models.densenet161(pretrained=True)
+        model = models.densenet121(pretrained=True)
+        in_features = model.classifier.in_features
+        model.classifier = nn.Linear(in_features, 26)
     elif model_name == "Inception":
         model = models.inception_v3(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "GoogleNet":
         model = models.googlenet(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "ShuffleNet":
         model = models.shufflenet_v2_x1_0(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "MobileNet":
         model = models.mobilenet_v2(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "ResNext":
         model = models.resnext101_32x8d(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "WResNet":
         model = models.wide_resnet101_2(pretrained=True)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
     elif model_name == "MNASNet":
         model = models.mnasnet1_0(pretrained=True)
-    
-    in_features = model.fc.in_features
-    model.fc = nn.Linear(in_features, 26)
+        in_features = model.fc.in_features
+        model.fc = nn.Linear(in_features, 26)
 
     return model
