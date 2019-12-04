@@ -17,7 +17,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labels = preprocess.labels()
 # Load model
 base_dir = os.getcwd()
-model_dir = os.path.join(base_dir, "Code", "best_models", "model_09")
+model_dir = os.path.join(base_dir, "Code", "model")
 model_path = os.path.join(model_dir, "sign_model.pth")
 
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
@@ -30,7 +30,7 @@ my_classifier.eval()
 transform = preprocess.make_transform(mode="predict")
 
 plt.ion()
-camera_url = "http://scimas:abcd1234@ip:8080/photo.jpg"
+camera_url = "http://user:passwd@ip:8080/photo.jpg"
 while True:
     r = requests.get(camera_url)
     f = io.BytesIO(r.content)
