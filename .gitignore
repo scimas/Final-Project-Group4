@@ -1,4 +1,5 @@
 FinalProject_ML2_R.pdf
 .vscode
 .ipynb_checkpoints
-
+__pycache__
+best_models
