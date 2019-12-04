@@ -1,23 +1,9 @@
 import numpy as np
 import pandas as pd
 from skimage.transform import rotate
+import torch
 
-
-def load_data():
-    """
-    Read the data files, normalize the features and return them as train and test numpy arrays.
-    """
-    X_train = np.load("../data/processed_images.npy")
-    X_train = X_train / 255
-    y_train = np.load("../data/processed_labels.npy")
-
-    df = pd.read_csv("../data/sign_mnist_test.csv")
-    X_test = df.iloc[:, 1:].values
-    X_test = X.reshape(-1, 28, 28) / 255
-    y_test = df.iloc[:, 0].values
-
-    return X_train, X_test, y_train, y_test
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def labels():
     text = [
@@ -55,10 +41,25 @@ def augment_data():
         # Rotate flipped image CW
         new_images.append(rotate(im[:, ::-1], -30, resize=True))
         new_labels.append(y[i])
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print(i)
     
-    new_images = np.array(new_images)
+    new_images = np.array(new_images).reshape(-1, 1, 38, 38)
     new_labels = np.array(new_labels)
     np.save("../data/processed_images.npy", new_images, allow_pickle=False)
     np.save("../data/processed_labels.npy", new_labels, allow_pickle=False)
+
+    df = pd.read_csv("../data/sign_mnist_test.csv")
+    X = df.iloc[:, 1:].values.reshape(-1, 28, 28)
+    y = df.iloc[:, 0].values
+    new_images = []
+    for i, im in enumerate(X):
+        new_images.append(np.pad(im, 5, mode="constant", constant_values=0))
+    new_images = np.array(new_images).reshape(-1, 1, 38, 38)
+    np.save("../data/test_images.npy", new_images, allow_pickle=False)
+    np.save("../data/test_labels.npy", y, allow_pickle=False)
+
+def augment_image(X):
+    return np.pad(X, 5, mode="constant", constant_values=0).reshape(1, 38, 38)
+
+# augment_data()
