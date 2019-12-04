@@ -8,6 +8,9 @@ from torchvision import models
 
 
 class MyDataset(Dataset):
+    """
+    Extend pytorch Dataset for my numpy dataset image loading
+    """
     def __init__(self, X, y, transform=None):
         self.X = np.float32(X)
         self.y = torch.from_numpy(y)
@@ -26,6 +29,9 @@ class MyDataset(Dataset):
 
 
 def get_model(model_name):
+    """
+    Get specific modified pre-trained models by name
+    """
     model = None
     if model_name == "AlexNet":
         model = models.alexnet(pretrained=True)

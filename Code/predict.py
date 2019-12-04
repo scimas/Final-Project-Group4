@@ -8,7 +8,7 @@ import preprocess
 import requests
 import torch
 
-from best_models.model_09.modelling import get_model
+from modelling import get_model
 from matplotlib import pyplot as plt
 from skimage.io import imread
 from skimage.transform import rotate
@@ -19,17 +19,19 @@ labels = preprocess.labels()
 base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
 model_path = os.path.join(model_dir, "sign_model.pth")
-
+# Get which type of model
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
     model_name = ms.readline().strip()
 
 my_classifier = get_model(model_name)
+# Load trained parameters
 my_classifier.load_state_dict(torch.load(model_path))
 my_classifier.to(device)
 my_classifier.eval()
 transform = preprocess.make_transform(mode="predict")
 
 plt.ion()
+# Change this code for different use cases
 camera_url = "http://user:passwd@ip:8080/photo.jpg"
 while True:
     r = requests.get(camera_url)

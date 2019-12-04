@@ -10,6 +10,9 @@ from torch.utils.data import DataLoader
 
 
 def score_func(y_true, y_pred):
+    """
+    Mean of macro averaged F1 score and Cohen's Kappa
+    """
     ckscr = cohen_kappa_score(y_true, y_pred)
     f1scr = f1_score(y_true, y_pred, average="macro")
     print("Cohen Kappa Score:", ckscr)
@@ -19,6 +22,8 @@ def score_func(y_true, y_pred):
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 alphabet = preprocess.labels()
+
+# Training data
 X_train, X_te, y_train, y_te, train_ws = preprocess.load_data()
 X_train = np.vstack((X_train, X_te))
 y_train = np.hstack((y_train, y_te))
@@ -27,11 +32,13 @@ train_loader = DataLoader(
     train_data, batch_size=512, shuffle=False, num_workers=8, pin_memory=True
 )
 
+# Testing data
 X_test, y_test, test_ws = preprocess.load_test_data()
 test_data = MyDataset(X_test, y_test, preprocess.make_transform(mode="eval"))
 test_loader = DataLoader(
     test_data, batch_size=512, shuffle=False, num_workers=8, pin_memory=True
 )
+
 base_dir = os.getcwd()
 model_dir = os.path.join(base_dir, "Code", "model")
 model_path = os.path.join(model_dir, "sign_model.pth")
@@ -39,12 +46,14 @@ model_path = os.path.join(model_dir, "sign_model.pth")
 with open(os.path.join(model_dir, "model_specification"), "r") as ms:
     model_name = ms.readline()
 
+# Load the trained model
 my_classifier = get_model(model_name)
 my_classifier.load_state_dict(torch.load(model_path))
 my_classifier.to(device)
 my_classifier.eval()
 
 preds = []
+# Evaluation on testing data
 with torch.no_grad():
     for i, (images, labels) in enumerate(test_loader):
         pred = my_classifier(images.to(device))
@@ -57,6 +66,7 @@ print("Average on test data:", score_func(y_test, preds))
 print()
 
 preds = []
+# Evaluation on training data
 with torch.no_grad():
     for i, (images, labels) in enumerate(train_loader):
         pred = my_classifier(images.to(device))

@@ -58,6 +58,9 @@ def labels():
 
 
 def augment_data():
+    """
+    Read the raw data and store it in easily loadable formats.
+    """
     base_dir = os.getcwd()
     data_dir = os.path.join(base_dir, "data")
     df = pd.read_csv(os.path.join(data_dir, "augmented.csv"))
@@ -73,7 +76,7 @@ def augment_data():
     np.save(os.path.join(data_dir, "train_labels.npy"), y, allow_pickle=False)
     np.save(os.path.join(data_dir, "train_weights.npy"), train_weights, allow_pickle=False)
 
-    df = pd.read_csv(os.path.join(data_dir, "augmented.csv"))
+    df = pd.read_csv(os.path.join(data_dir, "sign_mnist_test.csv"))
     X = df.iloc[:, 1:].values
     y = df.iloc[:, 0].values
     X = X.reshape(-1, 28, 28, 1)
@@ -93,6 +96,9 @@ class ReplicateChannel(object):
 
 
 def make_transform(mode="train"):
+    """
+    Various transforms used for training, evaluation and prediction
+    """
     resize = transforms.Resize((224, 224), interpolation=Image.LANCZOS)
     hflip = transforms.RandomHorizontalFlip()
     rotate = transforms.RandomRotation(10, resample=Image.BICUBIC)
