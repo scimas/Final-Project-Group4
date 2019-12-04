@@ -6,6 +6,7 @@ Make the `run.sh` script executable.
 ```
 chmod u+x run.sh
 ```
+The run script assumes python 3.x is being used and it is accessible as `python`. If not, change all instances of `python` to `python3` in the run script.
 To train the model:
 ```
 ./run.sh train
@@ -34,12 +35,23 @@ root
 │   ├── model
 │   │   └── 
 │   ├── modelling.py
+│   ├── predict.py
 │   ├── preprocess.py
 │   └── train.py
 ├── data
 │   └── augmented.csv
 ├── Group-Proposal
 │   └── Final Project Proposal.pdf
+├── ishita-jain-individual-project
+│   ├── Code
+│   │   └── train1-ij.py
+│   └── Individual-Final-Project-Report
+│       └── ishita-jain-final-report.pdf
+├── Jyothi-Ganji-individual-project
+│   ├── Code
+│   │   └── mywork.py
+│   └── Individual-Final-Project-Report
+│       └── Jyothi-Ganji-final-project.pdf
 ├── Final-Group-Presentation
 │   └── final presentation.pdf
 ├── Final-Group-Project-Report
