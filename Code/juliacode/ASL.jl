@@ -1,3 +1,4 @@
+__precompile__()
 module ASL
 
 using Flux, CuArrays, DataFrames, CSV
