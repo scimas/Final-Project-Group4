@@ -3,11 +3,12 @@ include("Preprocess.jl")
 include("Models.jl")
 include("Training.jl")
 using .Preprocess, .Models, .Training
-using Flux: logitcrossentropy
+using Flux
 using Flux.Optimise: Momentum
 using Random: randperm
+using BSON: @save, @load
 
-X, y = load_data()
+X, y = load_train_data()
 println("Data loaded")
 println("Size X: $(size(X)) | Size y: $(size(y))")
 train_inds = randperm(floor(Int, size(y, 2) * 0.7))
@@ -17,8 +18,18 @@ X_valid, y_valid = X[:, :, :, valid_inds], y[:, valid_inds]
 
 model = ResNet10(1, 28, 26)
 println("Model created")
-loss(ŷ, y) = logitcrossentropy(ŷ, y)
-optimizer = Momentum(0.001)
+loss(ŷ, y) = Flux.logitcrossentropy(ŷ, y)
+optimizer = Momentum(0.01)
 
 train!(model, loss, optimizer, X_train, y_train, X_valid, y_valid; use_gpu=true)
+
+@load "model.bson" model
+testmode!(model)
+
+X, y = load_test_data()
+println("Testing data loaded")
+println("Size X: $(size(X)) | Size y: $(size(y))")
+model = gpu(model)
+test_loss = loss(model(gpu(X)), gpu(y))
+println("Testing loss: $(test_loss)")
 end
