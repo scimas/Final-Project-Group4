@@ -3,7 +3,7 @@ function load_saved_model()
     model
 end
 
-function test_model(model; use_gpu=true)
+function test_model(model, X_test, y_test; use_gpu=true)
     if use_gpu
         to_gpu = gpu
         CuArrays.allowscalar(false)
@@ -12,11 +12,8 @@ function test_model(model; use_gpu=true)
     end
     model = to_gpu(model)
     testmode!(model)
-    X, y = load_test_data()
-    println("Testing data loaded")
-    println("Size X: $(size(X)) | Size y: $(size(y))")
     loss(ŷ, y) = Flux.logitcrossentropy(ŷ, y)
-    test_loss = loss(model(to_gpu(X)), to_gpu(y))
+    test_loss = loss(model(to_gpu(X_test)), to_gpu(y_test))
     println("Testing loss: $(test_loss)")
     model = cpu(model)
 end

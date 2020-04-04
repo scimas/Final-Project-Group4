@@ -2,24 +2,28 @@ include("ASL.jl")
 
 using .ASL
 using Flux
+using Flux: onehotbatch
 using Flux.Optimise: Momentum
 using Random: randperm
+using MLDataUtils
 
 X, y = load_train_data()
+weights = class_weights(y, 26)
 println("Data loaded")
 println("Size X: $(size(X)) | Size y: $(size(y))")
-train_inds = randperm(floor(Int, size(y, 2) * 0.7))
-valid_inds = [i for i in 1:size(y, 2) if i ∉ train_inds]
-X_train, y_train = X[:, :, :, train_inds], y[:, train_inds]
-X_valid, y_valid = X[:, :, :, valid_inds], y[:, valid_inds]
+(X_train, y_train), (X_valid, y_valid) = stratifiedobs((X, y); p=0.7, shuffle=false)
+y_train = Float32.(onehotbatch(y_train, 0:25))
+y_valid = Float32.(onehotbatch(y_valid, 0:25))
 train_loader = Flux.Data.DataLoader(X_train, y_train; batchsize=64)
 
 model = ResNet10(1, 28, 26)
 println("Model created")
-loss(ŷ, y) = Flux.logitcrossentropy(ŷ, y)
+loss(ŷ, y) = Flux.logitcrossentropy(ŷ, y; weights=gpu(weights))
 optimizer = Momentum(0.01)
 
 train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=true)
 
 model = load_saved_model()
+X_test, y_test = load_test_data()
+y_test = Float32.(onehotbatch(y_test, 0:25))
 test_model(model)
