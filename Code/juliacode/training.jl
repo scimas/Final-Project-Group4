@@ -25,7 +25,7 @@ function train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=
         testmode!(model)
         valid_loss = cpu(loss(model(to_gpu(X_valid)), to_gpu(y_valid)))
         tock = now()
-        println("Epoch: $(epoch) | Training loss: $(train_loss / size(y_train, 2)) | Validation loss: $(valid_loss) | Time: $(tock - tick)")
+        println("Epoch: $(epoch) | Training loss: $(train_loss / train_loader.nobs) | Validation loss: $(valid_loss) | Time: $(tock - tick)")
         if valid_loss < min_val_loss
             min_val_loss = valid_loss
             improve_epoch = epoch
