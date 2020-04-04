@@ -12,4 +12,5 @@ export load_train_data, load_test_data, ResNet10, train!, load_saved_model, test
 include("preprocess.jl")
 include("models.jl")
 include("training.jl")
+include("use_model.jl")
 end

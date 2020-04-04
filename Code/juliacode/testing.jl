@@ -1,11 +1,9 @@
-module Testing
 include("ASL.jl")
 
 using .ASL
 using Flux
 using Flux.Optimise: Momentum
 using Random: randperm
-using BSON: @save, @load
 
 X, y = load_train_data()
 println("Data loaded")
@@ -23,13 +21,5 @@ optimizer = Momentum(0.01)
 
 train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=true)
 
-@load "model.bson" model
-testmode!(model)
-
-X, y = load_test_data()
-println("Testing data loaded")
-println("Size X: $(size(X)) | Size y: $(size(y))")
-model = gpu(model)
-test_loss = loss(model(gpu(X)), gpu(y))
-println("Testing loss: $(test_loss)")
-end
+model = load_saved_model()
+test_model(model)

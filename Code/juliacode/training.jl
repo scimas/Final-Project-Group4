@@ -37,5 +37,6 @@ function train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=
             break
         end
     end
+    model = cpu(model)
     println("Training complete.")
 end
