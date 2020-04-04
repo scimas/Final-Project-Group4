@@ -1,12 +1,4 @@
-module Training
-using Flux, CuArrays
-using Flux.Optimise: update!
-using BSON: @save, @load
-using Dates: now
-
-export train!
-
-function train!(model, loss, optimizer, X_train, y_train, X_valid, y_valid; use_gpu=true)
+function train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=true, max_epochs=100, patience=3)
     if use_gpu
         to_gpu = gpu
         CuArrays.allowscalar(false)
@@ -14,13 +6,10 @@ function train!(model, loss, optimizer, X_train, y_train, X_valid, y_valid; use_
         to_gpu = identity
     end
     model = to_gpu(model)
-    train_loader = Flux.Data.DataLoader(X_train, y_train; batchsize=64)
-    MAX_EPOCHS = 100
     min_val_loss = 1f10
     improve_epoch = 1
-    patience = 3
     println("Starting training loop.")
-    for epoch in 1:MAX_EPOCHS
+    for epoch in 1:max_epochs
         tick = now()
         trainmode!(model)
         weights = Flux.params(model)
@@ -49,6 +38,4 @@ function train!(model, loss, optimizer, X_train, y_train, X_valid, y_valid; use_
         end
     end
     println("Training complete.")
-end
-
 end

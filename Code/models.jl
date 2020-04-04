@@ -1,8 +1,3 @@
-module Models
-using Flux
-
-export ResNet10
-
 """
     ResidualBlock
 
@@ -87,6 +82,4 @@ function ResNet10(in_channels::Integer, inputs::Integer, outputs::Integer)::ResN
     push!(layers, x -> reshape(x, :, size(x, 4))) # flatten
     push!(layers, Dense(inputs*inputs*512, outputs))
     ResNet(Chain(layers...))
-end
-
 end

@@ -1,9 +1,3 @@
-module Preprocess
-using DataFrames, CSV
-using Flux: onehotbatch
-
-export load_train_data, load_test_data
-
 function load_train_data()
     df = DataFrame(CSV.File("data/sign_mnist_train.csv"; type=UInt8))
     y = Float32.(onehotbatch(df.label, 0:25))
@@ -35,6 +29,4 @@ end
 
 function (norm::Normalizer)(im)
     @. (im - norm.μ) / norm.σ
-end
-
 end
