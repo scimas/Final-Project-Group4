@@ -16,14 +16,14 @@ function train!(model, loss, optimizer, train_loader, X_valid, y_valid; class_we
         train_loss = 0f0
         for (x, y) in train_loader
             grads = gradient(weights) do
-                minibatch_loss = loss(model(to_gpu(x)), to_gpu(y); weight=to_gpu(class_weights))
+                minibatch_loss = loss(model(to_gpu(x)), to_gpu(y), to_gpu(class_weights))
                 train_loss += cpu(minibatch_loss) * size(y, 2)
                 minibatch_loss
             end
             update!(optimizer, weights, grads)
         end
         testmode!(model)
-        valid_loss = cpu(loss(model(to_gpu(X_valid)), to_gpu(y_valid); weight=to_gpu(1)))
+        valid_loss = cpu(loss(model(to_gpu(X_valid)), to_gpu(y_valid), to_gpu(1)))
         tock = now()
         println("Epoch: $(epoch) | Training loss: $(train_loss / train_loader.nobs) | Validation loss: $(valid_loss) | Time: $(tock - tick)")
         if valid_loss < min_val_loss
