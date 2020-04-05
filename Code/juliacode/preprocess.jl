@@ -31,8 +31,7 @@ function (norm::Normalizer)(im)
     @. (im - norm.μ) / norm.σ
 end
 
-function class_weights(y::AbstractVector, n_classes=length(unique(y)))
-    classes = sort!(unique(y))
+function class_weights(y::AbstractVector, classes=1:length(unique(y)))
     counts = map(class -> count(x -> x == class, y), classes)
-    Float32.(length(y) / n_classes ./ counts)
+    replace(Float32.(length(y) / length(classes) ./ counts), Inf=>0)
 end

@@ -8,7 +8,7 @@ using Random: randperm
 using MLDataUtils
 
 X, y = load_train_data()
-weights = class_weights(y, 26)
+weights = class_weights(y, 0:25)
 println("Data loaded")
 println("Size X: $(size(X)) | Size y: $(size(y))")
 (X_train, y_train), (X_valid, y_valid) = stratifiedobs((X, y); p=0.7, shuffle=false)
