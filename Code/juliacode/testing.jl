@@ -18,10 +18,10 @@ train_loader = Flux.Data.DataLoader(X_train, y_train; batchsize=64)
 
 model = ResNet10(1, 28, 26)
 println("Model created")
-loss(ŷ, y) = Flux.logitcrossentropy(ŷ, y; weight=gpu(weights))
+loss(ŷ, y, weights) = Flux.logitcrossentropy(ŷ, y; weight=weights)
 optimizer = Momentum(0.01)
 
-train!(model, loss, optimizer, train_loader, X_valid, y_valid; use_gpu=true)
+train!(model, loss, optimizer, train_loader, X_valid, y_valid; class_weights=weights, use_gpu=true)
 
 model = load_saved_model()
 X_test, y_test = load_test_data()
