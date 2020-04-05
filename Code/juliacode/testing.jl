@@ -1,7 +1,7 @@
 include("ASL.jl")
 
 using .ASL
-using Flux
+using Flux, CuArrays
 using Flux: onehotbatch
 using Flux.Optimise: Momentum
 using Random: randperm
