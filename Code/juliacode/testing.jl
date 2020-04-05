@@ -26,4 +26,4 @@ train!(model, loss, optimizer, train_loader, X_valid, y_valid; class_weights=wei
 model = load_saved_model()
 X_test, y_test = load_test_data()
 y_test = Float32.(onehotbatch(y_test, 0:25))
-test_model(model)
+test_model(model, X_test, y_test; use_gpu=true)
