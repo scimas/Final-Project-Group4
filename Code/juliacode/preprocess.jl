@@ -2,7 +2,7 @@ function load_train_data()
     df = DataFrame(CSV.File("data/sign_mnist_train.csv"; type=UInt8))
     y = df.label
     images = []
-    norm = Normalizer(0.5, 0.5)
+    norm = Normalizer(0.5f0, 0.5f0)
     for i in 1:size(df, 1)
         im = norm(Vector{Float32}(df[i,2:end])/255)
         push!(images, reshape(im, 28, 28, 1))
@@ -14,7 +14,7 @@ function load_test_data()
     df = DataFrame(CSV.File("data/sign_mnist_test.csv"; type=UInt8))
     y = df.label
     images = []
-    norm = Normalizer(0.5, 0.5)
+    norm = Normalizer(0.5f0, 0.5f0)
     for i in 1:size(df, 1)
         im = norm(Vector{Float32}(df[i,2:end])/255)
         push!(images, reshape(im, 28, 28, 1))
